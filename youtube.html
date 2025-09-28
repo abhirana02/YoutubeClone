@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Clone</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f9f9f9; }
+    .navbar {
+      display: flex; align-items: center; padding: 10px 16px;
+      background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .logo { font-size: 24px; color: #ff0000; font-weight: bold; margin-right: 32px; }
+    .search-box {
+      flex: 1; display: flex; align-items: center;
+    }
+    .search-input {
+      flex: 1; padding: 7px 12px; font-size: 16px; border: 1px solid #ccc;
+      border-radius: 2px 0 0 2px; outline: none;
+    }
+    .search-btn {
+      padding: 7px 18px; background: #f0f0f0; border: 1px solid #ccc;
+      border-left: none; border-radius: 0 2px 2px 0; cursor: pointer; font-size: 16px;
+    }
+    .user-icon {
+      margin-left: 24px; width: 36px; height: 36px; border-radius: 50%; background: #ddd;
+    }
+    .sidebar {
+      position: fixed; left: 0; top: 56px; width: 180px; height: calc(100% - 56px); background: #fff;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; padding: 16px 0;
+    }
+    .sidebar a {
+      color: #333; text-decoration: none; padding: 10px 24px; font-size: 16px; border-radius: 8px;
+      margin-bottom: 2px; transition: background 0.2s;
+    }
+    .sidebar a:hover, .sidebar .active { background: #f2f2f2; }
+    .content {
+      margin-left: 180px; margin-top: 56px; padding: 30px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px;
+    }
+    .video-card {
+      background: #fff; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow 0.2s;
+    }
+    .video-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+    .video-thumb { width: 100%; height: 180px; object-fit: cover; background: #000; display: block; }
+    .video-info { display: flex; padding: 14px; }
+    .channel-icon {
+      width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; background: #eee;
+    }
+    .info-text { flex: 1; }
+    .video-title {
+      font-size: 17px; margin: 0 0 7px 0; font-weight: 600; color: #141414; line-height: 1.25;
+    }
+    .video-channel, .video-views { font-size: 14px; color: #606060; }
+    @media (max-width: 800px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; padding: 14px; }
+    }
+    @media (max-width: 500px) {
+      .navbar { flex-direction: column; align-items: flex-start; }
+      .content { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <span class="logo">YouTube</span>
+    <form class="search-box" onsubmit="searchVideo(event)">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search" aria-label="search"/>
+      <button class="search-btn" type="submit">🔍</button>
+    </form>
+    <img class="user-icon" src="https://randomuser.me/api/portraits/men/32.jpg" alt="user">
+  </div>
+  <div class="sidebar">
+    <a href="#" class="active">Home</a>
+    <a href="#">Trending</a>
+    <a href="#">Subscriptions</a>
+    <a href="#">Library</a>
+    <a href="#">History</a>
+  </div>
+  <div class="content" id="videoGrid"></div>
+  <script>
+    const videos = [
+      {
+        title: "Learn HTML in 1 Hour",
+        channel: "Code Academy",
+        views: "45K views · 2 days ago",
+        thumb: "https://i.ytimg.com/vi/qz0aGYrrlhU/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/men/10.jpg"
+      },
+      {
+        title: "CSS Crash Course for Beginners",
+        channel: "DesignTips",
+        views: "24K views · 1 week ago",
+        thumb: "https://i.ytimg.com/vi/yfoY53QXEnI/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/women/11.jpg"
+      },
+      {
+        title: "JavaScript Tutorial – Full Course",
+        channel: "FreeCodeCamp",
+        views: "1.2M views · 1 month ago",
+        thumb: "https://i.ytimg.com/vi/PkZNo7MFNFg/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/men/19.jpg"
+      },
+      {
+        title: "Responsive Web Design in 30 Minutes",
+        channel: "TechSimplified",
+        views: "33K views · 3 days ago",
+        thumb: "https://i.ytimg.com/vi/srvUrASNj0s/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/women/16.jpg"
+      },
+      {
+        title: "PHP for Beginners: Learn PHP",
+        channel: "Backend Mastery",
+        views: "18K views · 12 hours ago",
+        thumb: "https://i.ytimg.com/vi/OK_JCtrrv-c/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/men/28.jpg"
+      },
+      {
+        title: "CYBER SECURITY Explained Simply!",
+        channel: "InfoSec Talks",
+        views: "61K views · 2 weeks ago",
+        thumb: "https://i.ytimg.com/vi/1G9pDCgf4N4/maxresdefault.jpg",
+        channelIcon: "https://randomuser.me/api/portraits/men/35.jpg"
+      }
+    ];
+    function renderVideos(filter = "") {
+      const videoGrid = document.getElementById("videoGrid");
+      const filtered = videos.filter(v =>
+        v.title.toLowerCase().includes(filter.toLowerCase()) ||
+        v.channel.toLowerCase().includes(filter.toLowerCase())
+      );
+      videoGrid.innerHTML = filtered.map(video => `
+        <div class="video-card">
+          <img class="video-thumb" src="${video.thumb}" alt="Video thumbnail"/>
+          <div class="video-info">
+            <img class="channel-icon" src="${video.channelIcon}" alt="Channel"/>
+            <div class="info-text">
+              <div class="video-title">${video.title}</div>
+              <div class="video-channel">${video.channel}</div>
+              <div class="video-views">${video.views}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    function searchVideo(e) {
+      e.preventDefault();
+      const query = document.getElementById("searchInput").value.trim();
+      renderVideos(query);
+    }
+    renderVideos();
+  </script>
+</body>
+</html>
